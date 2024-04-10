@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!--    <TextView-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:gravity="center"-->
+    <!--        android:paddingBottom="16dp"-->
+    <!--        android:text="EasyPay"-->
+    <!--        android:textAppearance="@style/TextAppearance.AppCompat.Body2"-->
+    <!--        android:textColor="#3F51B5"-->
+    <!--        android:textSize="34sp" />-->
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@android:color/darker_gray"
+        android:scaleType="centerInside"
+        android:contentDescription="Cltkfnm" />
+
+    <Button
+        android:id="@+id/captureButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Сделать снимок" />
+
+    <Button
+        android:id="@+id/uploadButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Отправить" />
+
+    <Button
+        android:id="@+id/retakeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Переснять" />
+
+</LinearLayout>
