@@ -1,11 +1,15 @@
 package com.example.earsypay;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 
 import com.google.android.material.snackbar.Snackbar;
@@ -34,9 +38,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,8 +53,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
     private boolean photoTaken = false;
-    private static final int DESIRED_WIDTH = 1020; // Задайте нужные значения
-    private static final int DESIRED_HEIGHT = 860;
+    private static final int DESIRED_WIDTH = 1920; // Задайте нужные значения
+    private static final int DESIRED_HEIGHT = 1080;
     private static final int MY_PERMISSIONS_REQUEST_CAMERA = 1001;
 
 
@@ -107,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
             FileOutputStream fos = new FileOutputStream(file);
 
             // Сжимаем изображение и записываем в файл
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fos);
 
             // Закрываем поток
             fos.close();
@@ -139,7 +145,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private Bitmap resizeBitmap(Bitmap originalBitmap, int desiredWidth, int desiredHeight) {
-        return Bitmap.createScaledBitmap(originalBitmap, desiredWidth, desiredHeight, true);
+        // Определение оригинальных размеров изображения
+        int width = originalBitmap.getWidth();
+        int height = originalBitmap.getHeight();
+
+        // Определение коэффициентов масштабирования для ширины и высоты
+        float widthScale = (float) desiredWidth / width;
+        float heightScale = (float) desiredHeight / height;
+
+        // Используем меньший коэффициент масштабирования, чтобы сохранить все изображение
+        float scaleFactor = Math.min(widthScale, heightScale);
+
+        // Вычисляем новые размеры изображения
+        int newWidth = Math.round(scaleFactor * width);
+        int newHeight = Math.round(scaleFactor * height);
+
+        // Масштабируем изображение с высоким качеством интерполяции
+        return Bitmap.createScaledBitmap(originalBitmap, newWidth, newHeight, true);
     }
 
     private void dispatchTakePictureIntent() {
@@ -167,9 +189,14 @@ public class MainActivity extends AppCompatActivity {
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), imageBytes);
             MultipartBody.Part body = MultipartBody.Part.createFormData("file", "image.jpg", requestFile);
 
+            // Создаем  клиент OkHttp с установленным таймаутом
+            OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
+                    .callTimeout(30, TimeUnit.SECONDS); // Установка таймаута в 30 секунд
+            OkHttpClient client = clientBuilder.build();
+
             // Создание Retrofit-интерфейса
             Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl("https://eb97-94-29-126-173.ngrok-free.app")
+                    .baseUrl("https://d7f3-2a00-1fa0-672-2206-4ce5-a32d-877b-478f.ngrok-free.app")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
             ApiService apiService = retrofit.create(ApiService.class);
@@ -185,14 +212,21 @@ public class MainActivity extends AppCompatActivity {
 
                         // Ваш код для обработки текстового сообщения
                         Toast.makeText(MainActivity.this, "Сообщение от сервера: " + message, Toast.LENGTH_SHORT).show();
+
+                        // Копируем распознанный текст в буфер обмена
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                        ClipData clip = ClipData.newPlainText("Распознанный текст " + response.toString(), message);
+                        clipboard.setPrimaryClip(clip);
                     } else {
+                        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://apps.rustore.ru/app/ru.sberbankmobile")));
                         Toast.makeText(MainActivity.this, "Ошибка загрузки файла", Toast.LENGTH_SHORT).show();
                     }
                 }
 
                 @Override
                 public void onFailure(Call<ServerResponse> call, Throwable t) {
-                    Toast.makeText(MainActivity.this, "Ошибка загрузки файла: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://apps.rustore.ru/app/ru.sberbankmobile")));
+                    Toast.makeText(MainActivity.this, "Ошибка загрузки файла1: " + t.getMessage(), Toast.LENGTH_SHORT).show();
                 }
             });
 

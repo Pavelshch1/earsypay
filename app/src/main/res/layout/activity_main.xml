@@ -37,10 +37,4 @@
         android:layout_height="wrap_content"
         android:text="Отправить" />
 
-    <Button
-        android:id="@+id/retakeButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Переснять" />
-
 </LinearLayout>
